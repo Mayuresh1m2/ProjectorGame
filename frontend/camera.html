@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Playground Camera</title>
+<link rel="stylesheet" href="css/camera.css">
+</head>
+<body>
+<header>
+  <div id="rec" class="dot off" title="Camera status"></div>
+  <h1>Playground Camera</h1>
+  <span id="status">Not started</span>
+</header>
+
+<main>
+  <div class="view">
+    <video id="preview" autoplay playsinline muted></video>
+    <div id="cam-badge" class="badge hidden">● CAMERA ON</div>
+  </div>
+
+  <p id="msg" class="msg"></p>
+
+  <div class="row">
+    <button id="start" class="primary">Start camera</button>
+    <button id="stop" class="danger" disabled>Stop camera</button>
+  </div>
+  <div class="row">
+    <button id="flip" disabled>Switch front / rear</button>
+  </div>
+
+  <details>
+    <summary>Settings</summary>
+    <label>Resolution
+      <select id="res">
+        <option value="640x480">640 × 480 (fastest)</option>
+        <option value="1280x720" selected>1280 × 720</option>
+      </select>
+    </label>
+    <label>Frame rate
+      <select id="fps"><option>15</option><option>24</option><option selected>30</option></select>
+    </label>
+    <p class="small" id="actual"></p>
+  </details>
+
+  <p class="small">Video goes only to your laptop over your home Wi-Fi. Nothing is recorded or uploaded.</p>
+</main>
+<script type="module" src="js/camera.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+// Sections that wake when a hand is near and move on when touched (mouse stands in for a camera hand).
+import { resetScene, restoreScene } from './util.mjs';
+import { chromium } from 'playwright';
+const base = 'http://localhost:8000', shots = process.env.SHOTS || '/tmp';
+await resetScene();
+const put = (path, method, body) => fetch(base + path, { method, headers: { 'content-type': 'application/json' }, body: body && JSON.stringify(body) });
+await put('/api/presets/decor-4-reactive/apply', 'POST');
+const scene = await (await fetch(base + '/api/scene')).json();
+scene.surfaces.forEach((s) => (s.reaction.hold = 1));
+if (!(await put('/api/scene', 'PUT', scene)).ok) throw new Error('scene rejected');
+const browser = await chromium.launch(); const errors = [];
+const out = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+out.on('pageerror', (e) => errors.push(String(e))); out.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+let fail = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fail++; };
+await out.goto(`${base}/play.html`); await out.waitForTimeout(2000);
+const op = (id) => out.locator(`.surface[data-id=${id}]`).evaluate((e) => parseFloat(e.style.opacity || '1'));
+const srcs = (id) => out.locator(`.surface[data-id=${id}] img`).evaluateAll((l) => l.map((i) => i.src.split('/').pop()).join(','));
+ok((await op('a')) < 0.4 && (await op('d')) < 0.4, `all sections start dim (${(await op('a')).toFixed(2)})`);
+await out.mouse.move(320, 180); await out.waitForTimeout(100); await out.mouse.move(330, 190); await out.waitForTimeout(900);
+ok((await op('a')) > 0.9, `hand near section 1 wakes it (${(await op('a')).toFixed(2)})`);
+ok((await op('b')) < 0.4 && (await op('d')) < 0.4, 'the other sections stay dim');
+await out.screenshot({ path: `${shots}/react-awake.png` });
+const before = await srcs('a');
+await out.mouse.move(960, 600); await out.waitForTimeout(300);   // away (into section 4)
+await out.mouse.move(320, 180); await out.waitForTimeout(100); await out.mouse.move(330, 190); await out.waitForTimeout(1200);
+ok(before !== await srcs('a'), `touching it again moves to the next picture (${before} -> ${await srcs('a')})`);
+await out.mouse.move(960, 600); await out.waitForTimeout(2200);
+ok((await op('a')) < 0.5 && (await op('d')) > 0.9, `it falls asleep after the hold time and section 4 wakes (a=${(await op('a')).toFixed(2)}, d=${(await op('d')).toFixed(2)})`);
+await out.screenshot({ path: `${shots}/react-moved.png` });
+const ev = await (await fetch(base + '/api/events')).json();
+const list = ev.events || ev;
+ok(list.some((e) => e.source === 'interaction' || e.component === 'interaction' || JSON.stringify(e).includes('interaction')), 'the event log records the interaction');
+const st = await out.evaluate(async () => (await (await fetch('/api/stats')).json()).interactions);
+ok(st && st['Section 1'] >= 2, `interaction counters (${JSON.stringify(st)})`);
+console.log(JSON.stringify({ errors })); await browser.close(); await restoreScene(); process.exit(fail || errors.length ? 1 : 0);

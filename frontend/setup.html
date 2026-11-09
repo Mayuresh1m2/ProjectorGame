@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projector Setup</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📽️</text></svg>">
+<link rel="stylesheet" href="css/control.css">
+<link rel="stylesheet" href="css/setup.css">
+</head>
+<body class="panel">
+<header>
+  <h1>📽️ Projector setup</h1>
+  <a class="play" href="control.html">🧭 Control panel</a>
+  <a class="play" href="index.html" style="background:#6c5ce7">Home</a>
+  <span id="srv" class="pill bad">server offline</span>
+</header>
+
+<section class="tab">
+  <div class="grid">
+    <div class="card">
+      <h2>1 · How big will the picture be?</h2>
+      <label>Throw ratio (distance ÷ width, from the projector's spec sheet)<input id="c-throw" type="number" step="0.05" min="0.1" value="1.2"></label>
+      <label>Distance to the wall (metres)<input id="c-dist" type="number" step="0.1" min="0.3" value="3"></label>
+      <label>Aspect ratio<select id="c-aspect"><option>16:9</option><option>16:10</option><option>4:3</option></select></label>
+      <table class="stats">
+        <tr><td>Picture width</td><td id="c-w">–</td></tr>
+        <tr><td>Picture height</td><td id="c-h">–</td></tr>
+        <tr><td>Diagonal</td><td id="c-d">–</td></tr>
+        <tr><td>Smallest readable icon (10% of height)</td><td id="c-i">–</td></tr>
+      </table>
+      <p class="small">Calculated from the throw ratio you type; a zoom lens changes the real ratio within a range. Use the test pattern below to see what the wall actually gets.</p>
+    </div>
+
+    <div class="card">
+      <h2>2 · Test pattern</h2>
+      <p>Drag this browser window to the projector, then show a full-screen grid with margins, a circle, colour bars, a grey ramp and text sizes. Use it to check coverage, focus, brightness and keystone.</p>
+      <div class="row"><button id="b-pattern" class="primary">Show test pattern (full screen)</button></div>
+      <p class="small">Press <b>Esc</b> or click anywhere to leave. In the pattern, the outer border is the full picture, the inner dashed box is the 90% safe area, and the circle should look round (if it looks like an oval, fix the projector angle or aspect ratio).</p>
+    </div>
+
+    <div class="card">
+      <h2>3 · Latency test</h2>
+      <p>Measures how long it takes from the projector showing a flash to the laptop receiving the camera frame that shows it. This includes projector delay, phone capture, Wi-Fi and decoding.</p>
+      <ol class="steps">
+        <li>Start the iPhone camera (Control panel → Camera).</li>
+        <li>Aim the phone at the projected picture, or at a patch of wall it lights. Dim the room.</li>
+        <li>Move this window to the projector, then press the button.</li>
+      </ol>
+      <table class="stats">
+        <tr><td>Camera</td><td id="l-cam">–</td></tr>
+        <tr><td>Camera frame rate</td><td id="l-fps">–</td></tr>
+      </table>
+      <div class="row"><button id="b-latency" class="primary">Run latency test (8 flashes)</button></div>
+      <div id="l-result" class="result hidden"></div>
+      <p class="small">The wall flashes bright 8 times for a few seconds, so warn anyone sensitive to flashing lights first; Esc stops it. Accuracy is about one camera frame (33 ms at 30 fps). The tracking part is added from the live stats; drawing on screen is small and not included.</p>
+    </div>
+  </div>
+</section>
+
+<div id="stage" class="hidden"><canvas id="pattern"></canvas><div id="stage-msg"></div></div>
+<script type="module" src="js/setup.js"></script>
+</body>
+</html>

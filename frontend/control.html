@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Playground Control</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+<link rel="stylesheet" href="css/control.css">
+</head>
+<body class="panel">
+<header>
+  <h1>🦋 Playground Control</h1>
+  <nav id="tabs">
+    <button data-tab="connect" class="on">Camera</button>
+    <button data-tab="calibrate">Calibrate</button>
+    <button data-tab="projector">Projector</button>
+    <button data-tab="layout">Layout &amp; videos</button>
+    <button data-tab="settings">Tracking</button>
+    <button data-tab="quest">Playroom Quest</button>
+    <button data-tab="health">Health</button>
+  </nav>
+  <a class="play" href="setup.html" style="background:#6c5ce7" target="_blank">📽️ Projector setup</a>
+  <a class="play" href="play.html" target="playground-output">▶ Open game</a>
+  <button id="health-pill" class="pill ok" title="Open the health tab">health: –</button>
+  <span id="srv" class="pill bad">server offline</span>
+</header>
+
+<!-- ============ PLAYROOM QUEST ============ -->
+<section id="tab-quest" class="tab hidden">
+  <div class="grid">
+    <div class="card wide">
+      <h2>Playroom Quest: set up the zones</h2>
+      <ol class="steps">
+        <li>Switch tracking to <b>body pose</b> (the button below) and start the iPhone camera, placed where it sees the stairs and the wall in full.</li>
+        <li>Press <b>Use live camera frame as photo</b> (or upload a photo taken from the phone's position).</li>
+        <li>Press <b>Add zone</b>, click the corners of the stairs (or the climbing wall) on the photo, then <b>Finish shape</b>. Choose what triggers it and what it rewards.</li>
+        <li><b>Save zones</b>, open the game from the menu (🏆 Playroom Quest), and test with the buttons on the right. Walk, jump and climb in front of the camera; the skeleton should follow you here.</li>
+      </ol>
+      <div class="row wrap">
+        <span id="q-mode" class="pill neutral">tracking: –</span>
+        <button id="q-pose" class="primary">Switch to body pose tracking</button>
+        <button id="q-hands">Back to hand tracking</button>
+        <span class="small" id="q-model"></span>
+      </div>
+      <div class="calib-wrap">
+        <div>
+          <canvas id="q-canvas" width="640" height="480" class="preview big"></canvas>
+          <div class="row wrap">
+            <button id="q-snap">📷 Use live camera frame as photo</button>
+            <label class="inline"><input type="file" id="q-file" accept="image/*" hidden><button id="q-upload">Upload photo…</button></label>
+            <button id="q-add">＋ Add zone</button>
+            <button id="q-finish" disabled>Finish shape</button>
+            <button id="q-undo" disabled>Undo point</button>
+          </div>
+          <p class="small">The photo never leaves this laptop (saved in <code>data/</code>). If it was taken from a different place than the camera now sits, the zones will not line up: use the live frame.</p>
+          <p id="q-msg" class="msg"></p>
+        </div>
+        <div>
+          <h3>Zones</h3>
+          <div id="q-zones"></div>
+          <h3>Targets for the finale</h3>
+          <div id="q-targets"></div>
+          <div class="row"><button id="q-save" class="primary">Save zones</button></div>
+          <h3>Test the scoreboard</h3>
+          <div class="row wrap"><button class="sm" data-reward="laddu">+ laddu</button><button class="sm" data-reward="fuljhadi">+ fuljhadi</button><button class="sm" data-reward="jalebi">+ jalebi</button><button class="sm" data-reward="diya">+ diya</button></div>
+          <h3>Live</h3>
+          <div id="q-live" class="small">no people seen</div>
+          <div id="q-log" class="events"></div>
+        </div>
+      </div>
+      <p class="small">Jump and climb detection are heuristics tuned for a child-sized person; raise a zone's <b>sensitivity</b> if jumps are missed, lower it if it fires too easily. Small children, loose clothes and partly hidden bodies reduce accuracy. Supervise climbing and jumping as usual.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HEALTH ============ -->
+<section id="tab-health" class="tab hidden">
+  <div class="grid">
+    <div class="card">
+      <h2>Checks</h2>
+      <p class="small">Evaluated every second on the laptop. Each problem says what it means and what to try.</p>
+      <div id="h-checks"></div>
+      <p class="small">Also available as JSON at <code>/api/health</code>, plain-text metrics at <code>/api/metrics</code>, and a log file in <code>data/logs/playground.log</code>.</p>
+    </div>
+    <div class="card">
+      <h2>Recent events</h2>
+      <div class="row"><button id="h-clear" class="sm">Hide older</button><label class="inline"><input type="checkbox" id="h-info" checked> show info</label></div>
+      <div id="h-events" class="events"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CAMERA ============ -->
+<section id="tab-connect" class="tab">
+  <div class="grid">
+    <div class="card">
+      <h2>1 · Connect the iPhone</h2>
+      <ol class="steps">
+        <li>Put the iPhone on the same Wi-Fi as this laptop.</li>
+        <li>Scan the QR code (or type the link) in <b>Safari</b>.</li>
+        <li>Safari warns about the certificate (it is a private one made on this laptop): tap <b>Show Details → visit this website</b>.</li>
+        <li>Tap <b>Start camera</b> and allow camera access.</li>
+      </ol>
+      <div id="qr" class="qr"></div>
+      <div id="urls" class="urls"></div>
+      <p class="small" id="https-note"></p>
+    </div>
+    <div class="card" id="display-card">
+      <h2>Projector's own browser <span class="pill neutral">no cable</span></h2>
+      <ol class="steps">
+        <li>Put the projector (or the TV box on it) on the same Wi-Fi as this laptop.</li>
+        <li>In its browser, scan this QR code or type the link. Accept the certificate warning once.</li>
+        <li>It opens the game full screen and stays paired (a cookie in that browser). To lock out a display, press <b>Revoke displays</b>.</li>
+      </ol>
+      <div id="dqr" class="qr"></div>
+      <div id="durls" class="urls"></div>
+      <div class="row wrap"><button id="d-revoke" class="sm">Revoke displays</button> <span id="d-msg" class="small"></span></div>
+      <p class="small">A paired display only receives what the game draws from (hand positions, the scene, settings): never the camera picture, and it cannot change anything. If its browser is slow or will not run the game, use <b>▶ Open game</b> on this laptop over HDMI instead. Hand positions travel over your Wi-Fi to the display.</p>
+    </div>
+    <div class="card">
+      <h2>2 · Live status</h2>
+      <table class="stats">
+        <tr><td>Camera</td><td id="s-cam">–</td></tr>
+        <tr><td>Camera frame rate</td><td id="s-camfps">–</td></tr>
+        <tr><td>Tracking frame rate</td><td id="s-trkfps">–</td></tr>
+        <tr><td>Processing per frame</td><td id="s-proc">–</td></tr>
+        <tr><td>Latency (frame arrived → hands published)</td><td id="s-lat">–</td></tr>
+        <tr><td>Hands seen</td><td id="s-hands">–</td></tr>
+        <tr><td>Tracking quality level</td><td id="s-level">–</td></tr>
+        <tr><td>Calibration</td><td id="s-cal">–</td></tr>
+      </table>
+      <div class="row"><button id="btn-stopcam" class="danger">⏹ Stop camera</button></div>
+      <p class="small">Video is processed in memory only. Nothing is recorded or uploaded, and the stream is not reachable from the internet. Stopping the camera ends the stream here and on the phone page.</p>
+    </div>
+    <div class="card wide">
+      <h2>3 · What the laptop sees</h2>
+      <canvas id="preview" width="480" height="360" class="preview"></canvas>
+      <p class="small" id="preview-note">Waiting for camera…</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CALIBRATE ============ -->
+<section id="tab-calibrate" class="tab hidden">
+  <div class="grid">
+    <div class="card wide">
+      <h2>Camera → wall calibration</h2>
+      <ol class="steps">
+        <li>Open the game window on the projector. A <b>green grid</b> appears on it while this tab is open. Use <b>＋ Add grid</b> for a second wall or section: each grid gets its own calibration and hands are mapped through the grid they are in.</li>
+        <li>Move and resize the grid in <b>Projector grid</b> (drag its corners or inside it) so all four corners are on the wall <i>and</i> inside the camera's view. The grid on the wall follows live.</li>
+        <li>Press <b>Auto-find corners</b>: the projector flashes four dots and the camera locates them. Or drag the four numbered handles on the <b>camera view</b> onto the grid's corners yourself.</li>
+        <li>It saves as soon as the four handles are placed. Wave a hand: the green dot in <b>Play area (test)</b> should follow it. Set <b>mirror / rotation</b> first so the camera view looks like the wall.</li>
+      </ol>
+      <div class="row wrap">
+        <label class="inline"><input type="checkbox" id="c-mirror"> Mirror horizontally</label>
+        <label class="inline">Rotate <select id="c-rot"><option>0</option><option>90</option><option>180</option><option>270</option></select>°</label>
+        <button id="c-auto" class="primary">✨ Auto-find corners</button>
+        <button id="c-show">Hide grid on output</button>
+        <button id="c-reset">Reset calibration</button>
+      </div>
+      <div class="row wrap">
+        <b>Grids:</b> <span id="c-grids" class="ptlist"></span>
+        <button id="c-add">＋ Add grid</button>
+        <label class="inline">Name <input type="text" id="c-name" maxlength="40" size="14"></label>
+        <button id="c-del">Remove grid</button>
+        <button id="c-autoall">✨ Auto-find all grids</button>
+      </div>
+      <p id="c-msg" class="msg"></p>
+      <div class="calib-wrap">
+        <div>
+          <h3>Camera view <span class="small">– drag the handles onto the grid's corners</span></h3>
+          <canvas id="calib-preview" width="640" height="480" class="preview big"></canvas>
+          <div id="calib-pts" class="ptlist"></div>
+          <div class="row wrap">
+            <button id="c-capture">✋ Use fingertip for point <b id="c-active">1</b></button>
+            <button id="c-solve">Solve &amp; save</button>
+          </div>
+        </div>
+        <div>
+          <h3>Projector grid <span class="small">– drag corners; drag inside to move</span></h3>
+          <canvas id="calib-grid" width="360" height="203" class="preview grid-ed"></canvas>
+          <div class="row wrap">
+            <label class="inline">Size <input type="range" id="c-size" min="20" max="100" step="1" value="80"> <span id="c-size-v">80</span>%</label>
+            <button id="c-gridreset">Reset grid</button>
+          </div>
+          <h3>Play area (test)</h3>
+          <canvas id="calib-map" width="360" height="203" class="preview"></canvas>
+          <p class="small">Shows where a hand lands on the output once calibrated.</p>
+        </div>
+      </div>
+      <p class="small">Changing mirror/rotation clears the saved calibration (its points belonged to the old orientation). Moving the grid just clears the handles. The hand should be near the wall: the mapping is exact for the wall plane, and a hand held closer to the camera appears shifted (parallax). Auto-find works best with the room lights dimmed and the phone not moving.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROJECTOR ============ -->
+<section id="tab-projector" class="tab hidden">
+  <div class="grid">
+    <div class="card">
+      <h2>Output window</h2>
+      <p>The game runs in its own window so this control panel stays on the laptop screen.</p>
+      <div class="row wrap"><label class="inline">Send output to <select id="p-screen"><option value="">(this screen)</option></select></label></div>
+      <div class="row wrap">
+        <button id="p-open" class="primary">Open output window</button>
+        <button id="p-grid">Toggle test grid</button>
+      </div>
+      <p class="small" id="p-note"></p>
+      <h3>Detected displays</h3>
+      <ul id="p-displays" class="small"></ul>
+    </div>
+    <div class="card">
+      <h2>Resolution &amp; aspect</h2>
+      <label>Mode
+        <select id="o-mode"><option value="fill">Fill the window (native resolution)</option><option value="fixed">Fixed logical resolution</option></select>
+      </label>
+      <label>Preset
+        <select id="o-preset"><option value="">custom</option><option>1280x720</option><option>1920x1080</option><option>1024x768</option><option>1280x800</option><option>854x480</option></select>
+      </label>
+      <label>Width <input type="number" id="o-w" min="320" max="3840" step="1"></label>
+      <label>Height <input type="number" id="o-h" min="240" max="2160" step="1"></label>
+      <label>When aspect differs
+        <select id="o-fit"><option value="contain">Keep proportions (black bars)</option><option value="stretch">Stretch to fill</option></select>
+      </label>
+      <div class="row"><button id="o-save" class="primary">Apply</button></div>
+    </div>
+    <div class="card wide">
+      <h2>Projector notes</h2>
+      <ul class="notes">
+        <li>Connect the projector over HDMI and set <i>Settings → Displays → Join / Extend</i> (not Mirror), so the control panel stays on the laptop.</li>
+        <li>Use <b>Toggle test grid</b> to aim and zoom the projector. The border should fit the area you want to play on.</li>
+        <li>If the projector's own <b>digital keystone</b> is on, calibrate <i>after</i> setting it, and recalibrate if it changes: the camera sees the final image on the wall, so calibration absorbs it, but the picture is resampled and gets softer.</li>
+        <li>One projector can only light surfaces it can physically see: a floor, a door and a wall rarely fit in one beam. Use the Layout tab to give each visible region its own content.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LAYOUT ============ -->
+<section id="tab-layout" class="tab hidden">
+  <div class="layout-grid">
+    <div class="card">
+      <h2>Layout editor</h2>
+      <div class="row wrap">
+        <label class="inline">Start from a ready-made layout <select id="preset-sel"></select></label>
+        <button id="preset-apply">Apply</button>
+        <span class="small" id="preset-desc"></span>
+      </div>
+      <canvas id="ed" class="editor"></canvas>
+      <div class="row wrap">
+        <label class="inline"><input type="checkbox" id="ed-lock" checked> Keep rectangle when resizing</label>
+        <label class="inline"><input type="checkbox" id="ed-snap" checked> Snap</label>
+        <label class="inline" title="Draws a green outline, grid, diagonals and numbered corners on every surface on the wall, so you can see where each one lands"><input type="checkbox" id="ed-align"> 📐 Show alignment grid on the wall</label>
+      </div>
+      <p class="small">Drag a frame to move it, drag the corner handles to resize (untick “keep rectangle” to warp onto a slanted surface), drag the round handle to rotate. Changes appear on the output immediately.</p>
+      <div class="row wrap">
+        <button id="add-image">＋ Picture</button>
+        <button id="add-slides">＋ Slideshow</button>
+        <button id="add-video">＋ Video frame</button>
+        <button id="add-game">＋ Game area</button>
+        <button id="add-color">＋ Color panel</button>
+        <select id="preset"><option value="">Layout presets…</option><option value="single">Single full screen</option><option value="grid4">Four video frames</option><option value="wall-door">Wall + door + side</option></select>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Frames &amp; surfaces</h2>
+      <div id="surf-list"></div>
+      <div id="surf-form"></div>
+      <p class="small">Put video files (MP4/H.264 or WebM) and pictures (PNG, JPG, WebP, GIF, SVG) in the <code>media/</code> folder of the project. They stay on this laptop.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section id="tab-settings" class="tab hidden">
+  <div class="grid">
+    <div class="card">
+      <h2>Hand tracking</h2>
+      <div id="trk-form"></div>
+      <div class="row"><button id="trk-save" class="primary">Save</button></div>
+      <p class="small">Smoothing uses a One-Euro filter: lower <i>min cutoff</i> = steadier but laggier; higher <i>speed gain</i> = less lag during fast moves.</p>
+    </div>
+    <div class="card">
+      <h2>Testing without the camera</h2>
+      <div class="row wrap">
+        <button id="t-sim">Simulated hands: <b id="t-sim-n">0</b></button>
+        <button id="t-debug">Toggle statistics on output</button>
+        <button id="t-restart">Restart game</button>
+      </div>
+      <p class="small">The game also responds to mouse and touch on the output window.</p>
+    </div>
+  </div>
+</section>
+
+<script type="module" src="js/control.js"></script>
+</body>
+</html>

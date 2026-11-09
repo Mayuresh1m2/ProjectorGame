@@ -1,0 +1,11 @@
+#stage { position: fixed; inset: 0; z-index: 100; background: #000; cursor: none; }
+#stage canvas { width: 100%; height: 100%; display: block; }
+#stage.flash { background: #fff; }
+#stage.flash canvas { display: none; }
+#stage-msg { position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%); color: #888; font: 600 20px system-ui, sans-serif; pointer-events: none; }
+#stage.flash #stage-msg, #stage.dark #stage-msg { opacity: .0; }
+.result { margin-top: 10px; padding: 12px 14px; border-radius: 12px; background: #f3f1fb; line-height: 1.5; }
+.result b.big { font-size: 22px; }
+.result.warn { background: #fff4e0; }
+.result table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 6px; }
+.result td { padding: 3px 0; border-bottom: 1px solid #e3def5; }

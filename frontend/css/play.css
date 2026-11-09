@@ -1,0 +1,77 @@
+:root { --ink: #4b3a8f; --card: rgba(255,255,255,.92); }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: "Nunito", "Trebuchet MS", system-ui, sans-serif; color: var(--ink); -webkit-user-select: none; user-select: none; touch-action: none; }
+#stage { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; overflow: hidden; transform-origin: 0 0; background: #000; }
+#scene { position: absolute; inset: 0; perspective: none; }
+.surface { position: absolute; left: 0; top: 0; transform-origin: 0 0; overflow: hidden; background: #000; backface-visibility: hidden; }
+.surface canvas, .surface video { width: 100%; height: 100%; display: block; }
+.surface .frame { position: absolute; inset: 0; box-sizing: border-box; border-style: solid; pointer-events: none; z-index: 4; }
+.surface.touched { filter: brightness(1.25); }
+.surface-msg { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; text-align: center; padding: 8%; color: #fff; background: #333; font-size: 18px; }
+.hidden { display: none !important; }
+body.idle { cursor: none; }
+body.idle #hud { opacity: 0; pointer-events: none; }
+
+#hud { position: fixed; right: 14px; bottom: 14px; display: flex; gap: 8px; transition: opacity .4s; z-index: 20; }
+#hud button, #hud a { min-width: 46px; height: 46px; border-radius: 23px; border: 0; background: var(--card); font-size: 20px; cursor: pointer; padding: 0 12px; color: var(--ink); text-decoration: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+#hud button:hover, #hud a:hover { background: #fff; }
+#hud button.on { background: #ffd36e; }
+
+#overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10; pointer-events: none; }
+#overlay .card { background: var(--card); border-radius: 36px; padding: 4vh 6vw; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
+#ov-title { font-size: clamp(28px, 7vh, 80px); font-weight: 800; }
+#ov-sub { font-size: clamp(16px, 3.4vh, 36px); margin: 1vh 0 3vh; opacity: .85; }
+button.big { pointer-events: auto; font: inherit; font-weight: 800; font-size: clamp(22px, 5vh, 56px); padding: 1.4vh 4vw; border: 0; border-radius: 999px; background: linear-gradient(135deg, #ff7eb6, #ffa24c); color: #fff; cursor: pointer; position: relative; overflow: hidden; box-shadow: 0 6px 18px rgba(255,126,182,.5); }
+button.big .dwell { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(255,255,255,.35); width: 0; }
+
+#calib { position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,.55); pointer-events: none; }
+#calib .cbox { position: absolute; }
+#calib .cbox.discs, #calib .cbox.black { background: #000; } #calib:has(.cbox.discs), #calib:has(.cbox.black) { background: #000; }
+#calib .disc { position: absolute; width: 7vmin; height: 7vmin; margin: -3.5vmin 0 0 -3.5vmin; border-radius: 50%; background: #fff; }
+#calib svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+#calib svg .g { stroke: rgba(255,255,255,.55); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+#calib svg .d { stroke: rgba(255,255,255,.3); stroke-width: 1; stroke-dasharray: 6 6; vector-effect: non-scaling-stroke; }
+#calib svg .o { fill: rgba(57,217,138,.10); stroke: #39d98a; stroke-width: 4; vector-effect: non-scaling-stroke; }
+#calib svg g.idle { opacity: .55; } #calib svg g.idle .o { stroke: #7fb4ff; fill: rgba(127,180,255,.08); }
+#calib .pt.idle { border-color: #7fb4ff; width: 4.5vmin; height: 4.5vmin; margin: -2.25vmin 0 0 -2.25vmin; font-size: 2.2vmin; }
+#calib .glabel { position: absolute; transform: translate(-50%, -50%); color: #fff; font-weight: 800; font-size: 4vmin; text-shadow: 0 0 8px #000, 0 0 3px #000; opacity: .7; white-space: nowrap; } #calib .glabel.act { opacity: 1; color: #b6ffd6; }
+#calib .pt { position: absolute; width: 6vmin; height: 6vmin; margin: -3vmin 0 0 -3vmin; border-radius: 50%; border: .8vmin solid #fff; background: rgba(255,255,255,.15); color: #fff; font-weight: 800; font-size: 3vmin; display: flex; align-items: center; justify-content: center; }
+#calib .pt.active { background: #ff3d71; border-color: #ffe27a; animation: pulse 1s infinite ease-in-out; }
+#calib .pt::before, #calib .pt::after { content: ""; position: absolute; background: #fff; }
+#calib .pt::before { width: 10vmin; height: 2px; } #calib .pt::after { width: 2px; height: 10vmin; }
+@keyframes pulse { 50% { transform: scale(1.15); } }
+
+#hands-debug { position: fixed; inset: 0; z-index: 25; pointer-events: none; }
+#hands-debug i { position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%; border: 3px solid #00e0ff; background: rgba(0,224,255,.25); }
+#hands-debug i.mouse { border-color: #ffb300; background: rgba(255,179,0,.25); }
+#hands-debug i.lost { border-style: dashed; }
+
+#perf { position: fixed; left: 10px; top: 10px; z-index: 40; background: rgba(0,0,0,.65); color: #cfe; font: 12px/1.5 ui-monospace, monospace; padding: 8px 10px; border-radius: 8px; white-space: pre; pointer-events: none; }
+#toast { position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%); background: rgba(0,0,0,.75); color: #fff; padding: 10px 18px; border-radius: 999px; z-index: 50; font-size: 16px; }
+
+#settings { position: fixed; right: 14px; bottom: 74px; width: min(340px, 92vw); max-height: 80vh; overflow: auto; background: var(--card); border-radius: 20px; padding: 14px 18px; z-index: 35; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+#settings h3 { margin: 0 0 8px; }
+#settings label { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin: 10px 0; font-size: 14px; font-weight: 700; }
+#settings input[type=range] { grid-column: 1 / 3; width: 100%; }
+#settings select, #settings input[type=number] { font: inherit; }
+#settings button { margin-top: 8px; padding: 8px 16px; border-radius: 999px; border: 0; background: #ffd36e; font-weight: 800; cursor: pointer; }
+
+#grid { position: fixed; inset: 0; z-index: 28; pointer-events: none; border: 6px solid #fff; outline: 2px solid #f00;
+  background-image: linear-gradient(rgba(255,255,255,.35) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.35) 1px, transparent 1px); background-size: 10% 10%; display: flex; align-items: center; justify-content: center; }
+#grid b { background: rgba(0,0,0,.6); color: #fff; padding: 6px 14px; border-radius: 8px; font-size: 22px; }
+
+#b-health { font-size: 16px !important; }
+#b-health.ok { color: #2fbf5b; } #b-health.degraded { color: #f0a500; } #b-health.down { color: #e5392e; }
+#banner { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); background: rgba(179,38,30,.92); color: #fff; padding: 8px 18px; border-radius: 999px; z-index: 60; font-size: 16px; font-weight: 700; }
+#mic-ind { position: fixed; left: 14px; bottom: 14px; background: rgba(0,0,0,.65); color: #fff; padding: 6px 14px; border-radius: 999px; font-size: 14px; z-index: 40; }
+#b-mic.on { background: #ff8b8b; }
+.surface img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; transition-property: opacity; transition-timing-function: ease-in-out; user-select: none; }
+/* alignment aid, drawn inside the warped surface so its lines are straight when the corners are right */
+.surface .align { position: absolute; inset: 0; pointer-events: none; z-index: 5; box-sizing: border-box; border: 4px solid #39ff88;
+  background-image: linear-gradient(rgba(57,255,136,.55) 2px, transparent 2px), linear-gradient(90deg, rgba(57,255,136,.55) 2px, transparent 2px); background-size: 10% 10%; }
+.surface .align svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.surface .align line { stroke: rgba(57,255,136,.45); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.surface .align .c { position: absolute; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 800 28px/1 system-ui; color: #000; font-style: normal; }
+.surface .align .tl { left: 0; top: 0; background: #ff5c5c; } .surface .align .tr { right: 0; top: 0; background: #39ff88; }
+.surface .align .br { right: 0; bottom: 0; background: #5cb8ff; } .surface .align .bl { left: 0; bottom: 0; background: #ffe45c; }
+.surface .align b { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 6px 16px; background: rgba(0,0,0,.65); color: #fff; font: 700 26px system-ui; border-radius: 12px; white-space: nowrap; }

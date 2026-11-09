@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Butterfly Playground</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦋</text></svg>">
+<link rel="stylesheet" href="css/play.css">
+</head>
+<body>
+<div id="stage"><div id="scene"></div></div>
+
+<div id="overlay" class="hidden">
+  <div class="card">
+    <div id="ov-title"></div>
+    <div id="ov-sub"></div>
+    <button id="ov-btn" class="big"></button>
+  </div>
+</div>
+
+<div id="calib" class="hidden"></div>
+<div id="hands-debug" class="hidden"></div>
+
+<div id="hud">
+  <button id="b-menu" title="Game menu (M)">🎮</button>
+  <button id="b-restart" title="Restart (R)">↻</button>
+  <button id="b-sim" title="Simulated hands (S)">🖐 <span id="sim-n">0</span></button>
+  <button id="b-mic" title="Listen for claps (microphone stays on this laptop; nothing is recorded)">🎤</button>
+  <button id="b-sound" title="Sound (N)">🔊</button>
+  <button id="b-settings" title="Settings">⚙</button>
+  <button id="b-fs" title="Fullscreen (F)">⛶</button>
+  <button id="b-debug" title="Statistics (D)">📊</button>
+  <a id="b-health" href="control.html#health" target="_blank" title="Health: –">●</a>
+  <a id="b-control" href="control.html" target="_blank" title="Control panel">🧭</a>
+</div>
+
+<div id="perf" class="hidden"></div>
+<div id="toast" class="hidden"></div>
+<div id="banner" class="hidden"></div>
+<div id="mic-ind" class="hidden">🎤 listening for claps – nothing is recorded</div>
+
+<div id="settings" class="hidden">
+  <h3>Game settings</h3>
+  <div id="settings-body"></div>
+  <button id="settings-close">Close</button>
+</div>
+<script type="module" src="js/play.js"></script>
+</body>
+</html>

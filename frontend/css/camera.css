@@ -1,0 +1,25 @@
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, system-ui, sans-serif; background: #14121f; color: #eee; min-height: 100vh; padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom); }
+header { display: flex; align-items: center; gap: 10px; padding: 14px 0 6px; }
+h1 { font-size: 18px; margin: 0; flex: 1; }
+#status { font-size: 14px; opacity: .8; }
+.dot { width: 14px; height: 14px; border-radius: 50%; background: #666; }
+.dot.on { background: #ff3b30; box-shadow: 0 0 0 4px rgba(255,59,48,.3); animation: blink 1.4s infinite; }
+.dot.warn { background: #ffb300; }
+@keyframes blink { 50% { opacity: .5; } }
+.view { position: relative; background: #000; border-radius: 16px; overflow: hidden; aspect-ratio: 3 / 4; max-height: 62vh; margin: 0 auto; }
+video { width: 100%; height: 100%; object-fit: contain; display: block; }
+video.mirror { transform: scaleX(-1); }
+.badge { position: absolute; left: 10px; top: 10px; background: rgba(255,59,48,.9); padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.hidden { display: none; }
+.msg { min-height: 1.4em; margin: 10px 0; font-size: 15px; }
+.msg.err { color: #ff8a80; } .msg.ok { color: #9be39b; }
+.row { display: flex; gap: 10px; margin: 8px 0; }
+button { flex: 1; font-size: 17px; padding: 14px; border-radius: 12px; border: 0; background: #2d2a45; color: #fff; }
+button.primary { background: #6c5ce7; } button.danger { background: #c0392b; }
+button:disabled { opacity: .4; }
+details { margin: 12px 0; } summary { padding: 8px 0; }
+label { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
+select { font-size: 16px; padding: 8px; border-radius: 8px; background: #2d2a45; color: #fff; border: 0; }
+.small { font-size: 12px; opacity: .65; }
